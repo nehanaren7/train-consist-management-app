@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.LinkedList;
 
 public class TrainConsistManagementApp {
 
@@ -45,25 +46,54 @@ public class TrainConsistManagementApp {
         System.out.println("UC3 - Track Unique Bogie IDs");
         System.out.println("======================================\n");
 
-        // Create HashSet (no duplicates allowed)
         Set<String> bogies = new HashSet<>();
 
-        // Add IDs (including duplicates)
         bogies.add("BG101");
         bogies.add("BG102");
         bogies.add("BG103");
         bogies.add("BG104");
-
         bogies.add("BG101"); // duplicate
         bogies.add("BG102"); // duplicate
 
-        // Display result
         System.out.println("Bogie IDs After Insertion:");
         System.out.println(bogies + "\n");
 
         System.out.println("Note:");
         System.out.println("Duplicates are automatically ignored by HashSet.\n");
 
-        System.out.println("UC3 uniqueness validation completed...");
+        System.out.println("UC3 uniqueness validation completed...\n");
+
+        // ===== UC4 =====
+        System.out.println("======================================");
+        System.out.println("UC4 - Maintain Ordered Bogie Consist");
+        System.out.println("======================================\n");
+
+        // Create LinkedList
+        List<String> consist = new LinkedList<>();
+
+        // Add bogies in order
+        consist.add("Engine");
+        consist.add("Sleeper");
+        consist.add("AC");
+        consist.add("Cargo");
+        consist.add("Guard");
+
+        System.out.println("Initial Train Consist:");
+        System.out.println(consist + "\n");
+
+        // Insert Pantry Car at position 2
+        consist.add(2, "Pantry Car");
+
+        System.out.println("After Inserting 'Pantry Car' at position 2:");
+        System.out.println(consist + "\n");
+
+        // Remove first and last
+        ((LinkedList<String>) consist).removeFirst();
+        ((LinkedList<String>) consist).removeLast();
+
+        System.out.println("After Removing First and Last Bogie:");
+        System.out.println(consist + "\n");
+
+        System.out.println("UC4 ordered consist operations completed...");
     }
 }
