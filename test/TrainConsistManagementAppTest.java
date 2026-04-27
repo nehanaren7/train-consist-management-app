@@ -1,77 +1,80 @@
 import org.junit.jupiter.api.Test;
 import java.util.*;
+import java.util.stream.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TrainConsistManagementAppTest {
 
-    static class GoodsBogie {
+    static class Bogie {
         String type;
-        String cargo;
+        int capacity;
 
-        GoodsBogie(String type, String cargo) {
+        Bogie(String type, int capacity) {
             this.type = type;
-            this.cargo = cargo;
+            this.capacity = capacity;
         }
     }
 
-    @Test
-    void testSafety_AllBogiesValid() {
-        List<GoodsBogie> list = Arrays.asList(
-                new GoodsBogie("Cylindrical", "Petroleum"),
-                new GoodsBogie("Open", "Coal")
-        );
-
-        boolean result = list.stream()
-                .allMatch(b -> !b.type.equals("Cylindrical") || b.cargo.equals("Petroleum"));
-
-        assertTrue(result);
+    private List<Bogie> getBogies() {
+        List<Bogie> list = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            list.add(new Bogie("Sleeper", i));
+        }
+        return list;
     }
 
     @Test
-    void testSafety_CylindricalWithInvalidCargo() {
-        List<GoodsBogie> list = Arrays.asList(
-                new GoodsBogie("Cylindrical", "Coal")
-        );
-
-        boolean result = list.stream()
-                .allMatch(b -> !b.type.equals("Cylindrical") || b.cargo.equals("Petroleum"));
-
-        assertFalse(result);
+    void testLoopFilteringLogic() {
+        List<Bogie> result = new ArrayList<>();
+        for (Bogie b : getBogies()) {
+            if (b.capacity > 60) result.add(b);
+        }
+        assertTrue(result.stream().allMatch(b -> b.capacity > 60));
     }
 
     @Test
-    void testSafety_NonCylindricalBogiesAllowed() {
-        List<GoodsBogie> list = Arrays.asList(
-                new GoodsBogie("Open", "Coal"),
-                new GoodsBogie("Box", "Grain")
-        );
+    void testStreamFilteringLogic() {
+        List<Bogie> result = getBogies().stream()
+                .filter(b -> b.capacity > 60)
+                .collect(Collectors.toList());
 
-        boolean result = list.stream()
-                .allMatch(b -> !b.type.equals("Cylindrical") || b.cargo.equals("Petroleum"));
-
-        assertTrue(result);
+        assertTrue(result.stream().allMatch(b -> b.capacity > 60));
     }
 
     @Test
-    void testSafety_MixedBogiesWithViolation() {
-        List<GoodsBogie> list = Arrays.asList(
-                new GoodsBogie("Cylindrical", "Petroleum"),
-                new GoodsBogie("Cylindrical", "Coal")
-        );
+    void testLoopAndStreamResultsMatch() {
+        List<Bogie> loop = new ArrayList<>();
+        for (Bogie b : getBogies()) {
+            if (b.capacity > 60) loop.add(b);
+        }
 
-        boolean result = list.stream()
-                .allMatch(b -> !b.type.equals("Cylindrical") || b.cargo.equals("Petroleum"));
+        List<Bogie> stream = getBogies().stream()
+                .filter(b -> b.capacity > 60)
+                .collect(Collectors.toList());
 
-        assertFalse(result);
+        assertEquals(loop.size(), stream.size());
     }
 
     @Test
-    void testSafety_EmptyBogieList() {
-        List<GoodsBogie> list = new ArrayList<>();
+    void testExecutionTimeMeasurement() {
+        long start = System.nanoTime();
+        getBogies().stream().filter(b -> b.capacity > 60).toList();
+        long end = System.nanoTime();
 
-        boolean result = list.stream()
-                .allMatch(b -> !b.type.equals("Cylindrical") || b.cargo.equals("Petroleum"));
+        assertTrue((end - start) > 0);
+    }
 
-        assertTrue(result);
+    @Test
+    void testLargeDatasetProcessing() {
+        List<Bogie> list = new ArrayList<>();
+        for (int i = 0; i < 10000; i++) {
+            list.add(new Bogie("Sleeper", i % 100));
+        }
+
+        List<Bogie> result = list.stream()
+                .filter(b -> b.capacity > 60)
+                .collect(Collectors.toList());
+
+        assertTrue(result.size() > 0);
     }
 }
