@@ -1,6 +1,5 @@
 import org.junit.jupiter.api.Test;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,96 +15,96 @@ class TrainConsistManagementAppTest {
         }
     }
 
-    private List<Bogie> getSampleBogies() {
-        List<Bogie> bogies = new ArrayList<>();
-        bogies.add(new Bogie("Sleeper", 72));
-        bogies.add(new Bogie("AC Chair", 56));
-        bogies.add(new Bogie("First Class", 24));
-        bogies.add(new Bogie("General", 90));
-        return bogies;
+    private List<Bogie> getBogies() {
+        return Arrays.asList(
+                new Bogie("Sleeper", 72),
+                new Bogie("AC Chair", 56),
+                new Bogie("First Class", 24),
+                new Bogie("Sleeper", 70),
+                new Bogie("AC Chair", 60)
+        );
     }
 
-    // 1️⃣ Capacity > threshold
+    // 1️⃣ Grouping works
     @Test
-    void testFilter_CapacityGreaterThanThreshold() {
-        List<Bogie> result = getSampleBogies().stream()
-                .filter(b -> b.capacity > 70)
-                .collect(Collectors.toList());
+    void testGrouping_BogiesGroupedByType() {
+        Map<String, List<Bogie>> result =
+                getBogies().stream().collect(Collectors.groupingBy(b -> b.name));
 
-        assertEquals(2, result.size()); // Sleeper + General
+        assertTrue(result.containsKey("Sleeper"));
+        assertEquals(2, result.get("Sleeper").size());
     }
 
-    // 2️⃣ Capacity == threshold
+    // 2️⃣ Multiple bogies same group
     @Test
-    void testFilter_CapacityEqualToThreshold() {
-        List<Bogie> result = getSampleBogies().stream()
-                .filter(b -> b.capacity > 72)
-                .collect(Collectors.toList());
+    void testGrouping_MultipleBogiesInSameGroup() {
+        Map<String, List<Bogie>> result =
+                getBogies().stream().collect(Collectors.groupingBy(b -> b.name));
 
-        assertFalse(result.stream().anyMatch(b -> b.capacity == 72));
+        assertEquals(2, result.get("AC Chair").size());
     }
 
-    // 3️⃣ Capacity < threshold
+    // 3️⃣ Different types
     @Test
-    void testFilter_CapacityLessThanThreshold() {
-        List<Bogie> result = getSampleBogies().stream()
-                .filter(b -> b.capacity > 60)
-                .collect(Collectors.toList());
+    void testGrouping_DifferentBogieTypes() {
+        Map<String, List<Bogie>> result =
+                getBogies().stream().collect(Collectors.groupingBy(b -> b.name));
 
-        assertFalse(result.stream().anyMatch(b -> b.capacity < 60));
+        assertEquals(3, result.keySet().size());
     }
 
-    // 4️⃣ Multiple matches
+    // 4️⃣ Empty list
     @Test
-    void testFilter_MultipleBogiesMatching() {
-        List<Bogie> result = getSampleBogies().stream()
-                .filter(b -> b.capacity > 50)
-                .collect(Collectors.toList());
-
-        assertEquals(3, result.size());
-    }
-
-    // 5️⃣ No matches
-    @Test
-    void testFilter_NoBogiesMatching() {
-        List<Bogie> result = getSampleBogies().stream()
-                .filter(b -> b.capacity > 200)
-                .collect(Collectors.toList());
-
-        assertTrue(result.isEmpty());
-    }
-
-    // 6️⃣ All match
-    @Test
-    void testFilter_AllBogiesMatching() {
-        List<Bogie> result = getSampleBogies().stream()
-                .filter(b -> b.capacity > 10)
-                .collect(Collectors.toList());
-
-        assertEquals(4, result.size());
-    }
-
-    // 7️⃣ Empty list
-    @Test
-    void testFilter_EmptyBogieList() {
+    void testGrouping_EmptyBogieList() {
         List<Bogie> empty = new ArrayList<>();
 
-        List<Bogie> result = empty.stream()
-                .filter(b -> b.capacity > 60)
-                .collect(Collectors.toList());
+        Map<String, List<Bogie>> result =
+                empty.stream().collect(Collectors.groupingBy(b -> b.name));
 
         assertTrue(result.isEmpty());
+    }
+
+    // 5️⃣ Single category
+    @Test
+    void testGrouping_SingleBogieCategory() {
+        List<Bogie> list = Arrays.asList(
+                new Bogie("Sleeper", 72),
+                new Bogie("Sleeper", 70)
+        );
+
+        Map<String, List<Bogie>> result =
+                list.stream().collect(Collectors.groupingBy(b -> b.name));
+
+        assertEquals(1, result.size());
+    }
+
+    // 6️⃣ Correct keys
+    @Test
+    void testGrouping_MapContainsCorrectKeys() {
+        Map<String, List<Bogie>> result =
+                getBogies().stream().collect(Collectors.groupingBy(b -> b.name));
+
+        assertTrue(result.containsKey("Sleeper"));
+        assertTrue(result.containsKey("AC Chair"));
+        assertTrue(result.containsKey("First Class"));
+    }
+
+    // 7️⃣ Group size validation
+    @Test
+    void testGrouping_GroupSizeValidation() {
+        Map<String, List<Bogie>> result =
+                getBogies().stream().collect(Collectors.groupingBy(b -> b.name));
+
+        assertEquals(2, result.get("Sleeper").size());
     }
 
     // 8️⃣ Original list unchanged
     @Test
-    void testFilter_OriginalListUnchanged() {
-        List<Bogie> original = getSampleBogies();
+    void testGrouping_OriginalListUnchanged() {
+        List<Bogie> original = getBogies();
 
-        List<Bogie> result = original.stream()
-                .filter(b -> b.capacity > 60)
-                .collect(Collectors.toList());
+        original.stream().collect(Collectors.groupingBy(b -> b.name));
 
-        assertEquals(4, original.size()); // original unchanged
+        assertEquals(5, original.size());
     }
 }
